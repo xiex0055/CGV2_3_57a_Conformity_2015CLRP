@@ -1,0 +1,34 @@
+TITLE                            Merge the Transit Volumes
+
+DEFAULT_FILE_FORMAT              DBASE
+
+PEAK_RIDERSHIP_FILE_1            ..\i4_DRABAMlink.dbf			//DRIVE ACCESS
+PEAK_RIDERSHIP_FILE_2            ..\i4_DRBMAMlink.dbf
+PEAK_RIDERSHIP_FILE_3            ..\i4_DRCRAMlink.dbf
+PEAK_RIDERSHIP_FILE_4            ..\i4_DRMRAMlink.dbf
+PEAK_RIDERSHIP_FILE_5            ..\i4_KRABAMlink.dbf			//KISS AND RIDE ACCESS
+PEAK_RIDERSHIP_FILE_6            ..\i4_KRBMAMlink.dbf
+PEAK_RIDERSHIP_FILE_7            ..\i4_KRMRAMlink.dbf
+PEAK_RIDERSHIP_FILE_8            ..\i4_WKABAMlink.dbf			//WALK ACCESS
+PEAK_RIDERSHIP_FILE_9            ..\i4_WKBMAMlink.dbf
+PEAK_RIDERSHIP_FILE_10           ..\i4_WKCRAMlink.dbf
+PEAK_RIDERSHIP_FILE_11           ..\i4_WKMRAMlink.dbf
+
+OFFPEAK_RIDERSHIP_FILE_1         ..\i4_DRABOPlink.dbf			//DRIVE ACCESS
+OFFPEAK_RIDERSHIP_FILE_2         ..\i4_DRBMOPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_3         ..\i4_DRCROPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_4         ..\i4_DRMROPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_5         ..\i4_KRABOPlink.dbf			//KISS AND RIDE ACCESS
+OFFPEAK_RIDERSHIP_FILE_6         ..\i4_KRBMOPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_7         ..\i4_KRMROPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_8         ..\i4_WKABOPlink.dbf			//WALK ACCESS
+OFFPEAK_RIDERSHIP_FILE_9         ..\i4_WKBMOPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_10        ..\i4_WKCROPlink.dbf
+OFFPEAK_RIDERSHIP_FILE_11        ..\i4_WKMROPlink.dbf
+
+NEW_PEAK_RIDERSHIP_FILE          PK_VOL.dbf
+NEW_PEAK_RIDERSHIP_FORMAT        DBASE
+NEW_OFFPEAK_RIDERSHIP_FILE       OP_VOL.dbf
+NEW_OFFPEAK_RIDERSHIP_FORMAT     DBASE
+
+
