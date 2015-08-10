@@ -12,8 +12,11 @@
 ; ====================================================================================================
 PAGEHEIGHT=32767 ; preclude insertion of page headers
 
+CPI_File 	= 'INPUTS\CPI_File.TXT' ; Input parameters from the \INPUTS
+PP_Toll_Esc	= 'INPUTS\TOLL_ESC.DBF'
+
 ; A. INITIALIZATION:
-D_FAC    =   0.876;  Deflation factor converting 2014$ --> 2007$
+D_FAC    =   CPI_Table(1,CurrCPIYear);  Deflation factor
 CONV_VAL =   20.00;  in current 2012 cents
 ST       =     4  ;  First toll group
 TGRPS    =     390;  Last toll group
