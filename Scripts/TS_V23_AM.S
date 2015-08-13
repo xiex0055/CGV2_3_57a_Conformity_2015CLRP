@@ -11,9 +11,10 @@
 ;             Toll Cap at $10/mile in 2012$ jcpark 04/11/2013
 ; ====================================================================================================
 PAGEHEIGHT=32767 ; preclude insertion of page headers
+READ FILE= 'INPUTS\CPI_File.TXT'
 
 ; A. INITIALIZATION:
-D_FAC    =   0.876;  Deflation factor converting 2014$ --> 2007$
+D_FAC    =   CPI_Table(1,CurrCPIYear);  Deflation factor converting 2014$ --> 2007$
 CONV_VAL =   20.00;  in current 2012 cents
 ST       =     6  ;  First toll group
 TGRPS    =     390;  Last toll group
