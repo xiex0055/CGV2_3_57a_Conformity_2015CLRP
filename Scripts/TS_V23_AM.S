@@ -11,16 +11,12 @@
 ;             Toll Cap at $10/mile in 2012$ jcpark 04/11/2013
 ; ====================================================================================================
 PAGEHEIGHT=32767 ; preclude insertion of page headers
-READ FILE= 'INPUTS\CPI_File.TXT'
-
+READ FILE='..\..\HWY_Deflator.txt'
 ; A. INITIALIZATION:
-D_FAC    =   CPI_Table(1,CurrCPIYear);  Deflation factor converting 2014$ --> 2007$
 CONV_VAL =   20.00;  in current 2012 cents
-ST       =     6  ;  First toll group
-TGRPS    =     390;  Last toll group
+MAXTGRPS =     500;  Maximum toll group number
 VC_UW    =  1.0100; VC RATIO UPPER BOUND
 PRD      = 'AM'   ;
-T_NUM    =     385;  Total number of toll groups
 pr       =     3  ;  iteration index
 it       =     4  ;  iteration index
 Toll_Cap =  1000.0;  toll cap $10.00 in 2012 $
@@ -39,21 +35,21 @@ loop _dd = 1,100      ; big outer loop for iteration; MAX 100 ITERATION TO FIND 
 run pgm=highway
   neti =I@prev@_assign_output.net     ; I@prev@ highway network
 
-ARRAY TG_@PRD@VMT = @TGRPS@, ; TollGrp VMT array               for each time prd
-      TG_@PRD@WSP = @TGRPS@, ; TollGrp Speed-VMT product array for each time prd.
-      TG_@PRD@SPD = @TGRPS@, ; TollGrp Weighted Speed array    for each time prd.
-      TG_@PRD@BSP = @TGRPS@, ;
-      TG_FTP      = @TGRPS@, ; ROUTE TYPE
-      TG_@PRD@AVC = @TGRPS@, ; Average VC RATIO
-      TG_@PRD@SVC = @TGRPS@, ; SUM OF VC RATIO
-      TG_@PRD@VC  = @TGRPS@, ; VC RATIO
-      TG_DST      = @TGRPS@, ; Distance
-      TG_@PRD@LMT = @TGRPS@, ; LIMIT CODE
-      TG_@PRD@OTL = @TGRPS@, ; 'OLD' Toll by time period in cents
-      TG_@PRD@NTL = @TGRPS@, ; 'UPDATED' Toll by time period in cents
-      D_@PRD@VC   = @TGRPS@, ; VC DIFFERENCE = LOWER BOUND VC RATIO (=0.6) - AVG. WGT. VC
-      TG_@PRD@X   = @TGRPS@, ; DUMMY
-      TG_@PRD@DT  = @TGRPS@  ; TOGGLE SWITCH
+ARRAY TG_@PRD@VMT = @MAXTGRPS@, ; TollGrp VMT array               for each time prd
+      TG_@PRD@WSP = @MAXTGRPS@, ; TollGrp Speed-VMT product array for each time prd.
+      TG_@PRD@SPD = @MAXTGRPS@, ; TollGrp Weighted Speed array    for each time prd.
+      TG_@PRD@BSP = @MAXTGRPS@, ;
+      TG_FTP      = @MAXTGRPS@, ; ROUTE TYPE
+      TG_@PRD@AVC = @MAXTGRPS@, ; Average VC RATIO
+      TG_@PRD@SVC = @MAXTGRPS@, ; SUM OF VC RATIO
+      TG_@PRD@VC  = @MAXTGRPS@, ; VC RATIO
+      TG_DST      = @MAXTGRPS@, ; Distance
+      TG_@PRD@LMT = @MAXTGRPS@, ; LIMIT CODE
+      TG_@PRD@OTL = @MAXTGRPS@, ; 'OLD' Toll by time period in cents
+      TG_@PRD@NTL = @MAXTGRPS@, ; 'UPDATED' Toll by time period in cents
+      D_@PRD@VC   = @MAXTGRPS@, ; VC DIFFERENCE = LOWER BOUND VC RATIO (=0.6) - AVG. WGT. VC
+      TG_@PRD@X   = @MAXTGRPS@, ; DUMMY
+      TG_@PRD@DT  = @MAXTGRPS@  ; TOGGLE SWITCH
 
 zones = 1
 
@@ -82,14 +78,14 @@ endphase
 
 phase = iloop
       linkloop
-          if(lw.tollgrp > 1)
+          if(lw.tollgrp > 2) ; ONLY WORK WITH VARIABLE TOLL FACILITIES WITH TOLLGRP>2
 ;             TG_@PRD@CNT[lw.tollgrp] = TG_@PRD@CNT[lw.tollgrp] + lw.cnt_@prd@                                          ; COUNT NUMBER OF LINK IN EACH TOLLGRP
              TG_DST[lw.tollgrp]      = lw.distance
              TG_FTP[lw.tollgrp]      = lw.ftype
              TG_@PRD@SVC[lw.tollgrp] = TG_@PRD@SVC[lw.tollgrp]+((lw.i@prev@@PRD@vol * lw.distance)*lw.I@PREV@@prd@VC)  ; SUM OF VC RATIO                                                                   ;
              TG_@PRD@VMT[lw.tollgrp] = TG_@PRD@VMT[lw.tollgrp]+(lw.i@prev@@PRD@vol  * lw.distance)                     ;
              TG_@PRD@BSP[lw.tollgrp] = TG_@PRD@BSP[lw.tollgrp]+((lw.i@prev@@PRD@vol * lw.distance)*lw.i@prev@@PRD@spd) ;
-             TG_@PRD@OTL[lw.tollgrp] = (lw.@PRD@toll/lw.distance)/@D_FAC@                                              ;
+             TG_@PRD@OTL[lw.tollgrp] = (lw.@PRD@toll/lw.distance)/@DEFLATIONFTR@                                              ;
          endif
       endlinkloop
 
@@ -98,7 +94,7 @@ phase = iloop
 ;
 ;
 
-LOOP k=@ST@,@TGRPS@           ; START - loop for estimating average vc ratio & avg wgt speed
+LOOP k=1,@MAXTGRPS@           ; START - loop for estimating average vc ratio & avg wgt speed
    IF(TG_@PRD@DT[K]=0)
            IF  (TG_@PRD@VMT[k] == 0.0)
                 TG_@PRD@AVC[k] =  0.0
@@ -118,7 +114,7 @@ ENDLOOP                    ; END - loop for estimating average vc ratio & avg wg
 ;*************
 ; toll setting
 ;
-     LOOP K=@ST@,@TGRPS@
+     LOOP K=1,@MAXTGRPS@
            IF (TG_@PRD@AVC[K] > 1.0100)                                                          ; CASE 1: when VC > 1.01 ADD TOLL
                 IF(D_@PRD@VC[K] > 0.1000)                                                        ;
                    TG_@PRD@X[K]  = TG_@PRD@OTL[K] + 1*50.0*@CONV_VAL@/20.0                       ;             50 CENTS INCREASE
@@ -157,7 +153,7 @@ ENDLOOP                    ; END - loop for estimating average vc ratio & avg wg
 ;*****************************************************************************************************************************************
 ; SUMMARIZE TOLL, SPEED, VMT
 
-LOOP k=@ST@,@TGRPS@
+LOOP k=1,@MAXTGRPS@
 ;  IF( TG_@PRD@OTL[K] >0)
       Print form=13.0 list = k(10),k(10),TG_FTP[k](10),TG_@PRD@OTL[k](10.4),TG_@PRD@X[K](10.4),
                              TG_@PRD@WSP[k](10.4),TG_@PRD@AVC[k](10.4),
@@ -183,9 +179,9 @@ NETI=I@prev@_assign_output.net             ; Input network in TP+ format
 lookup name = TOLL@PRD@,        ; AM TOLL RATE
        lookup[1] = 1,result=2,  ; Toll group
        lookup[2] = 1,result=3,  ; Facility Type
-       lookup[3] = 1,result=4,  ; Adjusted Toll
-       lookup[4] = 1,result=5,  ; Speed
-       lookup[5] = 1,result=6,  ; Model Toll
+       lookup[3] = 1,result=4,  ; Old Toll
+       lookup[4] = 1,result=5,  ; Adjusted Toll
+       lookup[5] = 1,result=6,  ; TollGrp Speed-VMT product
        lookup[6] = 1,result=7,  ; avg vc ratio
        lookup[7] = 1,result=8,  ; VMT
        lookup[8] = 1,result=9,  ; difference lb vc - avg vc ratio
@@ -196,8 +192,10 @@ lookup name = TOLL@PRD@,        ; AM TOLL RATE
 ;Check to see if design vc raio is achieved
 ;
  FLAG_@PRD@ = 0
-
-LOOP _IDX=@ST@,@TGRPS@ ;
+ T_Num =0 ; Total number of coded tollgrps
+LOOP _IDX=1,@MAXTGRPS@ ;
+  IF (TOLL@PRD@(1,_IDX) >0)	T_Num = T_Num + 1
+  
   IF (TOLL@PRD@(9,_IDX) = 1)
       FLAG_@PRD@ = FLAG_@PRD@ + 1
   ELSE
@@ -207,7 +205,7 @@ ENDLOOP
 ;*****************************************************************************************
 ; Terminate
 
-IF(FLAG_@PRD@==@T_NUM@)
+IF(FLAG_@PRD@==T_Num)
   Print form=13.0 list = 'AM = ',FLAG_@PRD@(10)
   ABORT  ; TERMINATE THE PROCESS
 ENDIF
@@ -221,7 +219,6 @@ ENDRUN
 
 RUN PGM=HWYNET
 ZONES=3722
-
 NETI=I@prev@_assign_output.net                ; ADJUSTED 2010 I@prev@ HWY NET
 NETO=TEMP_@PRD@1.NET                  ; Output network in TP+ format
 
@@ -229,9 +226,9 @@ NETO=TEMP_@PRD@1.NET                  ; Output network in TP+ format
 lookup name = TOLL@PRD@,           ; AM TOLL RATE
        lookup[1] = 1,result=2,  ; Toll group
        lookup[2] = 1,result=3,  ; Facility Type
-       lookup[3] = 1,result=4,  ; Adjusted Toll
-       lookup[4] = 1,result=5,  ; Speed
-       lookup[5] = 1,result=6,  ; Model Toll
+       lookup[3] = 1,result=4,  ; Old Toll
+       lookup[4] = 1,result=5,  ; Adjusted Toll
+       lookup[5] = 1,result=6,  ; TollGrp Speed-VMT product
        lookup[6] = 1,result=7,  ; avg vc ratio
        lookup[7] = 1,result=8,  ; VMT
        lookup[8] = 1,result=9,  ; difference lb vc - avg vc ratio
@@ -239,14 +236,14 @@ lookup name = TOLL@PRD@,           ; AM TOLL RATE
        interpolate=N,fail=0,0,0,file=OUT@prev@@PRD@.TXT
 ;
 ; Replace AMTOLL
-; DISCOUNTS TO CURRENT YEAR $ VALUE X D_FAC
+; DISCOUNTS TO CURRENT YEAR $ VALUE X Deflation Factor
 ; ONLY UNSATISFACTORY TOLL GETS UPDATED; OTHERWISE, TOLL IS KEPT
 
-LOOP _IDX=@ST@,@TGRPS@          ;
+LOOP _IDX=1,@MAXTGRPS@          ;
 
 IF(TOLL@PRD@(9,_IDX)=0)
    IF(LI.1.tollgrp = TOLL@PRD@(1,_IDX))
-        @PRD@TOLL = TOLL@PRD@(4,_IDX) * LI.1.DISTANCE * @D_FAC@
+        @PRD@TOLL = TOLL@PRD@(4,_IDX) * LI.1.DISTANCE * @DEFLATIONFTR@
    ELSE
         @PRD@TOLL = @PRD@TOLL
    ENDIF
